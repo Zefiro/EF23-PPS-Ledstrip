@@ -225,11 +225,14 @@ void calcColors() {
       fillColor(0);
       break;
     case 1:
-	  effectAlarm();
+	    effectAlarm();
       break;
-	case 2:
-	  effectCockpit();
-	  break;
+	  case 2:
+	    effectCockpit();
+      break;
+    case 3:
+      effectFire();
+	    break;
   }
 }
 
@@ -256,13 +259,52 @@ void effectCockpit() {
 			fillColor(0);
 			break;
 		case 1:
-		    effect.param1 = constrain(effect.param1, 0, 20);
+		  effect.param1 = constrain(effect.param1, 0, 20);
 			byte w = (int) effect.brightness * effect.param1 / 20;
 			byte b = (int) effect.brightness * (20 - effect.param1) / 20;
 			uint32_t c = strip.Color(0, 0, b, w);
 			fillColor(c);
 			break;
 	}
+}
+
+void effectFire() {
+  switch(effect.mode){
+    case 0:
+      fillColor(0);
+      strip.brightness = 255;
+      break;
+    case 1:
+      if(millis()%20<1){ //fade out every color
+        for(i=1,i<strip.numPixels(),i++){
+          byte r = (strip.getPixelColor(i)>>24)&0xFF;
+          byte g = (strip.getPixelColor(i)>>16)&0xFF;
+          byte b = (strip.getPixelColor(i)>>8)&0xFF;
+          byte w = (strip.getPixelColor(i))&0xFF;
+          if(r>0) r=r/1.3;
+          if(g>0) g=g/1.3;
+          if(b>0) b=b/1.3;
+          if(w>0) w=w/1.3;
+          strip.setPixelColor(i,r,g,b,w);
+        }
+      }
+      for(int i=1; i<strip.numPixels(); i++){ // amber | fire
+        if(random(0,1000)<effect.param1){
+          uint16_t intensity = random(effect.param2,effect.param3);
+          uint16_t amber = strip.Color(100*intensity,0,0,0);
+          strip.setPixelColor(i,amber);
+        }
+      }
+      if(random(0,1000)>effect.param4){ // Peaks | Flames
+        for(int i=0;i<4;i++){
+          uint16_t intensity = random(effect.param2,effect.param3);
+          uint16_t peak = strip.Color(255*intensity,150*intensity,0,200*intensity);
+          strip.setPixelColor(random(1,strip.NUM_LEDS-1),peak);
+        }
+      }
+      strip.brightness = effect.brightness;
+      break;
+  }
 }
 
 void fillColor(uint32_t c) {
