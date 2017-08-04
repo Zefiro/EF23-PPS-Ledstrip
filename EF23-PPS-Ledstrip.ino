@@ -225,14 +225,14 @@ void calcColors() {
       fillColor(0);
       break;
     case 1:
-	    effectAlarm();
+      effectAlarm();
       break;
-	  case 2:
-	    effectCockpit();
+    case 2:
+      effectCockpit();
       break;
     case 3:
       effectFire();
-	    break;
+      break;
   }
 }
 
