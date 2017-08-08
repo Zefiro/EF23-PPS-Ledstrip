@@ -202,6 +202,11 @@ void initEffect() {
 			effectMaxMode = 1;
 			break;
     case 3:
+      effect.brightness = 255;
+      effect.param1 = 210;
+      effect.param2 = 200;
+      effect.param3 = 255;
+      effect.param4 = 110;
       effectMaxMode = 1;
       break;
 	}
@@ -320,13 +325,13 @@ void effectFire() {
         for(int i=1; i<strip.numPixels(); i++){ // amber | fire
           if(random(0,1000)<effect.param1){
             float intensity = (float)(random(10,effect.param2))/255;
-            strip.setPixelColor(i,(int)(50*intensity),0,0,0);
+            strip.setPixelColor(i,(int)(250*intensity),0,0,0);
           }
         }
         if(random(0,1000)<effect.param4){ // Peaks | Flames
           for(int i=0;i<5;i++){
             float intensity = (float)(random(10,effect.param3))/255;
-            strip.setPixelColor(random(1,NUM_LEDS-1),(int)(255*intensity),(int)(120*intensity),(int)(0*intensity),(int)(0*intensity));
+            strip.setPixelColor(random(1,NUM_LEDS-1),(int)(255*intensity),(int)(100*intensity),(int)(0*intensity),(int)(20*intensity));
           }
         }
       }
