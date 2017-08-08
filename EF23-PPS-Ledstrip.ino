@@ -99,7 +99,7 @@ void loop() {
     if (rotation) {
       switch(selectionMode) {
         case 0:
-          effect.id = constrain(effect.id + rotation, 0, 2);
+          effect.id = constrain(effect.id + rotation, 0, 3);
           Serial.printf("Effect: %d\n", effect.id);
 		  initEffect();
           break;
@@ -237,6 +237,7 @@ void calcColors() {
 }
 
 void effectAlarm() {
+    strip.setBrightness(255);
 	switch(effect.mode) {
 		case 0:
 			fillColor(0);
@@ -254,6 +255,7 @@ void effectAlarm() {
 }
 
 void effectCockpit() {
+    strip.setBrightness(255);
 	switch(effect.mode) {
 		case 0:
 			fillColor(0);
@@ -272,11 +274,11 @@ void effectFire() {
   switch(effect.mode){
     case 0:
       fillColor(0);
-      strip.brightness = 255;
+      strip.setBrightness(255);
       break;
     case 1:
       if(millis()%20<1){ //fade out every color
-        for(i=1,i<strip.numPixels(),i++){
+        for(int i=1; i<strip.numPixels(); i++){
           byte r = (strip.getPixelColor(i)>>24)&0xFF;
           byte g = (strip.getPixelColor(i)>>16)&0xFF;
           byte b = (strip.getPixelColor(i)>>8)&0xFF;
@@ -285,24 +287,25 @@ void effectFire() {
           if(g>0) g=g/1.3;
           if(b>0) b=b/1.3;
           if(w>0) w=w/1.3;
-          strip.setPixelColor(i,r,g,b,w);
+		  uint32_t c = (((r << 8 + g) << 8 + b) << 8 + w);
+          strip.setPixelColor(i,c);
         }
       }
       for(int i=1; i<strip.numPixels(); i++){ // amber | fire
         if(random(0,1000)<effect.param1){
           uint16_t intensity = random(effect.param2,effect.param3);
-          uint16_t amber = strip.Color(100*intensity,0,0,0);
+          uint16_t amber = strip.Color((100*intensity) >> 8,0,0,0);
           strip.setPixelColor(i,amber);
         }
       }
       if(random(0,1000)>effect.param4){ // Peaks | Flames
         for(int i=0;i<4;i++){
           uint16_t intensity = random(effect.param2,effect.param3);
-          uint16_t peak = strip.Color(255*intensity,150*intensity,0,200*intensity);
-          strip.setPixelColor(random(1,strip.NUM_LEDS-1),peak);
+          uint16_t peak = strip.Color((255*intensity) >> 8,(150*intensity) >> 8, 0,(200*intensity) >> 8);
+          strip.setPixelColor(random(1,NUM_LEDS-1),peak);
         }
       }
-      strip.brightness = effect.brightness;
+      strip.setBrightness(effect.brightness);
       break;
   }
 }
