@@ -146,6 +146,7 @@ void loop() {
     calcSelectionColor();
     calcColors();
     strip.show();  
+    delay(1);
 }
 
 void saveEEPROM() {
@@ -197,6 +198,9 @@ void initEffect() {
 		    effect.brightness = 50;
 			effectMaxMode = 1;
 			break;
+    case 3:
+      effectMaxMode = 1;
+      break;
 	}
 }
 
@@ -277,32 +281,31 @@ void effectFire() {
       strip.setBrightness(255);
       break;
     case 1:
-      if(millis()%20<1){ //fade out every color
+      if(millis()%20==0){ //fade out every color
         for(int i=1; i<strip.numPixels(); i++){
-          byte r = (strip.getPixelColor(i)>>24)&0xFF;
-          byte g = (strip.getPixelColor(i)>>16)&0xFF;
-          byte b = (strip.getPixelColor(i)>>8)&0xFF;
-          byte w = (strip.getPixelColor(i))&0xFF;
-          if(r>0) r=r/1.3;
-          if(g>0) g=g/1.3;
-          if(b>0) b=b/1.3;
-          if(w>0) w=w/1.3;
-		  uint32_t c = (((r << 8 + g) << 8 + b) << 8 + w);
-          strip.setPixelColor(i,c);
+          byte w = (strip.getPixelColor(i)>>24)&0xFF;
+          byte r = (strip.getPixelColor(i)>>16)&0xFF;
+          byte g = (strip.getPixelColor(i)>>8)&0xFF;
+          byte b = (strip.getPixelColor(i))&0xFF;
+          r=(float)(r)*0.9;
+          g=(float)(g)*0.9;
+          b=(float)(b)*0.9;
+          w=(float)(w)*0.9;
+          strip.setPixelColor(i,r,g,b,w);
         }
       }
-      for(int i=1; i<strip.numPixels(); i++){ // amber | fire
-        if(random(0,1000)<effect.param1){
-          uint16_t intensity = random(effect.param2,effect.param3);
-          uint16_t amber = strip.Color((100*intensity) >> 8,0,0,0);
-          strip.setPixelColor(i,amber);
+      if (millis()%10==0){
+        for(int i=1; i<strip.numPixels(); i++){ // amber | fire
+          if(random(0,1000)<effect.param1){
+            float intensity = (float)(random(10,effect.param2))/255;
+            strip.setPixelColor(i,(int)(50*intensity),0,0,0);
+          }
         }
-      }
-      if(random(0,1000)>effect.param4){ // Peaks | Flames
-        for(int i=0;i<4;i++){
-          uint16_t intensity = random(effect.param2,effect.param3);
-          uint16_t peak = strip.Color((255*intensity) >> 8,(150*intensity) >> 8, 0,(200*intensity) >> 8);
-          strip.setPixelColor(random(1,NUM_LEDS-1),peak);
+        if(random(0,1000)<effect.param4){ // Peaks | Flames
+          for(int i=0;i<5;i++){
+            float intensity = (float)(random(10,effect.param3))/255;
+            strip.setPixelColor(random(1,NUM_LEDS-1),(int)(255*intensity),(int)(120*intensity),(int)(0*intensity),(int)(0*intensity));
+          }
         }
       }
       strip.setBrightness(effect.brightness);
