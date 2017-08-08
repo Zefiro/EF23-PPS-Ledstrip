@@ -19,14 +19,17 @@ Bounce bouncerRotaryButton = Bounce();
 
 #define PUSH_BUTTON_PIN 4
 
-#define NUM_LEDS 59
+//#define NUM_LEDS 59
+#define NUM_LEDS 15
+#define REPEAT_LED_COUNT 3
+#define FLIP_UNEVEN true
 
 byte rotaryALast, rotaryBLast;
 int rotaryPos = 30;
 unsigned long rotaryALastMillis, rotaryBLastMillis;
 unsigned long rotaryPushedMillis;
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS + 1, LEDSTRIP_PIN, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel((NUM_LEDS*REPEAT_LED_COUNT) + 1, LEDSTRIP_PIN, NEO_GRBW + NEO_KHZ800);
 
 struct {
 	byte id;
@@ -146,6 +149,7 @@ void loop() {
     calcSelectionColor();
     calcColors();
     strip.show();  
+    delay(1);
 }
 
 void saveEEPROM() {
@@ -197,6 +201,14 @@ void initEffect() {
 		    effect.brightness = 50;
 			effectMaxMode = 1;
 			break;
+    case 3:
+      effect.brightness = 255;
+      effect.param1 = 210;
+      effect.param2 = 200;
+      effect.param3 = 255;
+      effect.param4 = 110;
+      effectMaxMode = 1;
+      break;
 	}
 }
 
@@ -233,6 +245,25 @@ void calcColors() {
     case 3:
       effectFire();
       break;
+  }
+  multiplyEffect();
+}
+
+void multiplyEffect(){
+  for(int i=0;i<REPEAT_LED_COUNT;i++){
+    for(int l=0;l<NUM_LEDS;l++){
+          byte w = (strip.getPixelColor(l+1)>>24)&0xFF;
+          byte r = (strip.getPixelColor(l+1)>>16)&0xFF;
+          byte g = (strip.getPixelColor(l+1)>>8)&0xFF;
+          byte b = (strip.getPixelColor(l+1))&0xFF;
+          if(FLIP_UNEVEN&&i%2==0){
+            int led = ((i+2)*NUM_LEDS)-l;
+            strip.setPixelColor(led,r,g,b,w);
+          }else{
+            int led = ((i+1)*NUM_LEDS)+l+1;
+            strip.setPixelColor(led,r,g,b,w);
+          }
+    }
   }
 }
 
@@ -277,32 +308,31 @@ void effectFire() {
       strip.setBrightness(255);
       break;
     case 1:
-      if(millis()%20<1){ //fade out every color
+      if(millis()%20==0){ //fade out every color
         for(int i=1; i<strip.numPixels(); i++){
-          byte r = (strip.getPixelColor(i)>>24)&0xFF;
-          byte g = (strip.getPixelColor(i)>>16)&0xFF;
-          byte b = (strip.getPixelColor(i)>>8)&0xFF;
-          byte w = (strip.getPixelColor(i))&0xFF;
-          if(r>0) r=r/1.3;
-          if(g>0) g=g/1.3;
-          if(b>0) b=b/1.3;
-          if(w>0) w=w/1.3;
-		  uint32_t c = (((r << 8 + g) << 8 + b) << 8 + w);
-          strip.setPixelColor(i,c);
+          byte w = (strip.getPixelColor(i)>>24)&0xFF;
+          byte r = (strip.getPixelColor(i)>>16)&0xFF;
+          byte g = (strip.getPixelColor(i)>>8)&0xFF;
+          byte b = (strip.getPixelColor(i))&0xFF;
+          r=(float)(r)*0.9;
+          g=(float)(g)*0.9;
+          b=(float)(b)*0.9;
+          w=(float)(w)*0.9;
+          strip.setPixelColor(i,r,g,b,w);
         }
       }
-      for(int i=1; i<strip.numPixels(); i++){ // amber | fire
-        if(random(0,1000)<effect.param1){
-          uint16_t intensity = random(effect.param2,effect.param3);
-          uint16_t amber = strip.Color((100*intensity) >> 8,0,0,0);
-          strip.setPixelColor(i,amber);
+      if (millis()%10==0){
+        for(int i=1; i<strip.numPixels(); i++){ // amber | fire
+          if(random(0,1000)<effect.param1){
+            float intensity = (float)(random(10,effect.param2))/255;
+            strip.setPixelColor(i,(int)(250*intensity),0,0,0);
+          }
         }
-      }
-      if(random(0,1000)>effect.param4){ // Peaks | Flames
-        for(int i=0;i<4;i++){
-          uint16_t intensity = random(effect.param2,effect.param3);
-          uint16_t peak = strip.Color((255*intensity) >> 8,(150*intensity) >> 8, 0,(200*intensity) >> 8);
-          strip.setPixelColor(random(1,NUM_LEDS-1),peak);
+        if(random(0,1000)<effect.param4){ // Peaks | Flames
+          for(int i=0;i<5;i++){
+            float intensity = (float)(random(10,effect.param3))/255;
+            strip.setPixelColor(random(1,NUM_LEDS-1),(int)(255*intensity),(int)(100*intensity),(int)(0*intensity),(int)(20*intensity));
+          }
         }
       }
       strip.setBrightness(effect.brightness);
