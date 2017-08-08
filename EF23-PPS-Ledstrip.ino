@@ -19,14 +19,17 @@ Bounce bouncerRotaryButton = Bounce();
 
 #define PUSH_BUTTON_PIN 4
 
-#define NUM_LEDS 59
+//#define NUM_LEDS 59
+#define NUM_LEDS 15
+#define REPEAT_LED_COUNT 3
+#define FLIP_UNEVEN true
 
 byte rotaryALast, rotaryBLast;
 int rotaryPos = 30;
 unsigned long rotaryALastMillis, rotaryBLastMillis;
 unsigned long rotaryPushedMillis;
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS + 1, LEDSTRIP_PIN, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel((NUM_LEDS*REPEAT_LED_COUNT) + 1, LEDSTRIP_PIN, NEO_GRBW + NEO_KHZ800);
 
 struct {
 	byte id;
@@ -237,6 +240,25 @@ void calcColors() {
     case 3:
       effectFire();
       break;
+  }
+  multiplyEffect();
+}
+
+void multiplyEffect(){
+  for(int i=0;i<REPEAT_LED_COUNT;i++){
+    for(int l=0;l<NUM_LEDS;l++){
+          byte w = (strip.getPixelColor(l+1)>>24)&0xFF;
+          byte r = (strip.getPixelColor(l+1)>>16)&0xFF;
+          byte g = (strip.getPixelColor(l+1)>>8)&0xFF;
+          byte b = (strip.getPixelColor(l+1))&0xFF;
+          if(FLIP_UNEVEN&&i%2==0){
+            int led = ((i+2)*NUM_LEDS)-l;
+            strip.setPixelColor(led,r,g,b,w);
+          }else{
+            int led = ((i+1)*NUM_LEDS)+l+1;
+            strip.setPixelColor(led,r,g,b,w);
+          }
+    }
   }
 }
 
