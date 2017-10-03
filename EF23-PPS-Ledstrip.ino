@@ -19,10 +19,17 @@ Bounce bouncerRotaryButton = Bounce();
 
 #define PUSH_BUTTON_PIN 4
 
-//#define NUM_LEDS 59
-#define NUM_LEDS 15
-#define REPEAT_LED_COUNT 3
+#define SMOKE_MATRIX
+
+#ifdef SMOKE_MATRIX
+#define NUM_LEDS 10
+#define REPEAT_LED_COUNT 12
 #define FLIP_UNEVEN true
+#else
+#define NUM_LEDS 59
+#define REPEAT_LED_COUNT 1
+#define FLIP_UNEVEN false
+#endif
 
 byte rotaryALast, rotaryBLast;
 int rotaryPos = 30;
@@ -193,39 +200,39 @@ void initEffect() {
 			effect.param2 = 20;
 			effect.param3 = 10;
 			effect.param4 = 0;
-		    effect.brightness = 50;
+		    effect.brightness = 255;
 			effectMaxMode = 1;
 			break;
 		case 2:
 			effect.param1 = 0;
-		    effect.brightness = 50;
+		    effect.brightness = 255;
 			effectMaxMode = 1;
 			break;
-    case 3:
-      effect.brightness = 255;
-      effect.param1 = 210;
-      effect.param2 = 200;
-      effect.param3 = 255;
-      effect.param4 = 110;
-      effectMaxMode = 1;
-      break;
-	}
+		case 3:
+			effect.brightness = 255;
+			effect.param1 = 210;
+			effect.param2 = 200;
+			effect.param3 = 255;
+			effect.param4 = 110;
+			effectMaxMode = 1;
+			break;
+		}
 }
 
 void calcSelectionColor() {
   uint32_t c = 0;
   switch(selectionMode) {
     case 0:
-      c = strip.Color(5, 0, 0, 0);
+      c = strip.Color(1, 0, 0, 0);
       break;
     case 1:
-      c = strip.Color(0, 0, 0, 5);
+      c = strip.Color(0, 0, 0, 1);
       break;
     case 2:
     case 3:
     case 4:
     case 5:
-      c = strip.Color(0, 5, 0, 0);
+      c = strip.Color(0, 1, 0, 0);
       break;
   }
   strip.setPixelColor(0, c);
@@ -287,15 +294,19 @@ void effectAlarm() {
 
 void effectCockpit() {
     strip.setBrightness(255);
+	byte r,g,b,w;
+	uint32_t c;
 	switch(effect.mode) {
 		case 0:
 			fillColor(0);
 			break;
 		case 1:
-		  effect.param1 = constrain(effect.param1, 0, 20);
-			byte w = (int) effect.brightness * effect.param1 / 20;
-			byte b = (int) effect.brightness * (20 - effect.param1) / 20;
-			uint32_t c = strip.Color(0, 0, b, w);
+			effect.param1 = constrain(effect.param1, 0, 20);
+			effect.param2 = constrain(effect.param2, 0, 20);
+			w = (int) effect.brightness * effect.param2 / 20;
+			r = (int) effect.brightness * (20 - effect.param2) / 20 * effect.param1 / 20;
+			b = (int) effect.brightness * (20 - effect.param2) / 20 * (20 - effect.param1) / 20;
+		    c = strip.Color(r, 0, b, w);
 			fillColor(c);
 			break;
 	}
